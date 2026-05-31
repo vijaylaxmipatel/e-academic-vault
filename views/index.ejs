@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Academic Credential Vault</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .navbar-brand { font-weight: 700; }
+        .card { border: none; border-radius: 12px; }
+        .badge-verified { background-color: #d1e7dd; color: #0f5132; }
+        .cursor-pointer { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-graduation-cap me-2 text-warning"></i>E-Academic Vault</a>
+            <div class="collapse navbar-collapse justify-content-end">
+                <span class="navbar-text text-white-50 me-3 cursor-pointer" onclick="openAdminModal()">
+                    <i class="fas fa-user-shield me-1 text-info"></i> Admin Portal (Login/Sign-up)
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <% if (locals.message) { %>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <%= message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+
+        <ul class="nav nav-tabs mb-4" id="vaultTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-panel" type="button">
+                    <i class="fas fa-chart-pie me-2"></i>Dashboard & Verification
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-panel" type="button">
+                    <i class="fas fa-cloud-upload-alt me-2"></i>Upload New Credential
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="dashboard-panel">
+                <div class="row g-3 mb-4 align-items-center">
+                    <div class="col-md-7">
+                        <form action="/" method="GET" class="input-group shadow-sm">
+                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" name="search" class="form-control" placeholder="Search by Enrollment Number..." value="<%= searchQuery || '' %>">
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </form>
+                    </div>
+                    <div class="col-md-5 text-md-end">
+                        <span class="badge bg-secondary p-2 shadow-sm"><i class="fas fa-database me-1"></i> Total Secured Records: <%= certificates.length %></span>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Enrollment No</th>
+                                        <th>Student Name</th>
+                                        <th>Course</th>
+                                        <th>University</th>
+                                        <th>Passing Year</th>
+                                        <th>Status</th>
+                                        <th class="text-end pe-4">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if(certificates.length === 0) { %>
+                                        <tr><td colspan="7" class="text-center p-4 text-muted">No verified records found.</td></tr>
+                                    <% } else { %>
+                                        <% certificates.forEach(cert => { %>
+                                            <tr>
+                                                <td class="ps-4"><strong><%= cert.enrollmentNo %></strong></td>
+                                                <td><%= cert.studentName %></td>
+                                                <td><%= cert.course %></td>
+                                                <td><%= cert.university %></td>
+                                                <td><%= cert.passingYear %></td>
+                                                <td><span class="badge badge-verified"><i class="fas fa-check-circle me-1"></i> Verified</span></td>
+                                                <td class="text-end pe-4">
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="triggerStudentAccess('<%= cert._id %>', '<%= cert.studentName %>', '<%= cert.course %>', '<%= cert.enrollmentNo %>')">
+                                                        <i class="fas fa-eye me-1"></i> View / Download
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="upload-panel">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="card shadow-sm border-top border-primary border-4">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="card-title mb-0 text-primary"><i class="fas fa-file-medical me-2"></i>Vault New Document (Admin Only)</h5>
+                            </div>
+                            <div class="card-body">
+                                <form action="/api/upload" method="POST" enctype="multipart/form-data">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Student Full Name</label>
+                                            <input type="text" name="studentName" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Enrollment Number</label>
+                                            <input type="text" name="enrollmentNo" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Course / Degree</label>
+                                            <input type="text" name="course" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">University / Board</label>
+                                            <input type="text" name="university" class="form-control" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Year of Passing</label>
+                                        <input type="number" name="passingYear" class="form-control" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label">Upload Certificate File (PDF/Image)</label>
+                                        <input type="file" name="credentialFile" class="form-control" accept="application/pdf, image/*" required>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-lock me-2"></i>Securely Vault Data</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="adminModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="adminModalTitle"><i class="fas fa-user-plus me-2 text-info"></i>Create Admin Account</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="signUpView">
+                        <form action="/api/admin/signup" method="POST">
+                            <div class="mb-3"><label class="form-label">Full Name</label><input type="text" name="name" class="form-control" required></div>
+                            <div class="mb-3"><label class="form-label">Email ID</label><input type="email" name="email" class="form-control" required></div>
+                            <div class="mb-3"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+                            <div class="d-grid mb-3"><button type="submit" class="btn btn-primary">Register Account</button></div>
+                        </form>
+                        <p class="text-center text-muted mb-0">Already registered? <span class="text-primary cursor-pointer fw-bold" onclick="toggleAdminView('login')">Log In Here</span></p>
+                    </div>
+                    <div id="loginView" style="display: none;">
+                        <form action="/api/admin/login" method="POST">
+                            <div class="mb-3"><label class="form-label">Email ID</label><input type="email" name="email" class="form-control" required></div>
+                            <div class="mb-3"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
+                            <div class="d-grid mb-3"><button type="submit" class="btn btn-success">Secure Log In</button></div>
+                        </form>
+                        <p class="text-center text-muted mb-0">New User? <span class="text-primary cursor-pointer fw-bold" onclick="toggleAdminView('signup')">Create Account</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="studentAuthModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-lock me-2"></i>Student Access Verification</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="studentAuthForm" action="/api/student/verify" method="POST">
+                        <input type="hidden" id="authCertId" name="certId">
+                        <div class="mb-3">
+                            <label class="form-label">College ID / Enrollment No</label>
+                            <input type="text" id="studentAuthId" name="enrollmentNo" class="form-control" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Portal Password</label>
+                            <input type="password" name="password" class="form-control" placeholder="Enter portal password (Hint: 123456)" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Verify & Download Credential</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openAdminModal() {
+            new bootstrap.Modal(document.getElementById('adminModal')).show();
+        }
+        function toggleAdminView(view) {
+            if(view === 'signup') {
+                document.getElementById('signUpView').style.display = "block";
+                document.getElementById('loginView').style.display = "none";
+            } else {
+                document.getElementById('signUpView').style.display = "none";
+                document.getElementById('loginView').style.display = "block";
+            }
+        }
+        function triggerStudentAccess(id, name, course, rollNo) {
+            document.getElementById('authCertId').value = id;
+            document.getElementById('studentAuthId').value = rollNo;
+            new bootstrap.Modal(document.getElementById('studentAuthModal')).show();
+        }
+    </script>
+</body>
+</html>
