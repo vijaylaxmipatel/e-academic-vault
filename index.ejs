@@ -7,43 +7,122 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f4f6f9; }
-        .navbar-brand { font-weight: 700; }
-        .card { border: none; border-radius: 12px; }
-        .badge-verified { background-color: #d1e7dd; color: #0f5132; }
+        /* 🌌 Point 1: Premium Dark Overlay Tech Background Image */
+        body { 
+            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.85)), 
+                        url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?fm=jpg&q=80&w=1920') no-repeat center center fixed;
+            background-size: cover;
+            color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .navbar-brand { font-weight: 700; font-size: 1.4rem; }
+        
+        /* 💧 Point 1: Frosted Glassmorphism Styling (Paani jaisa look) */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            color: #ffffff;
+        }
+
+        .modal-content {
+            background: rgba(20, 30, 55, 0.85) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 20px !important;
+            color: #ffffff;
+        }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border-radius: 8px;
+        }
+        .form-control::placeholder { color: rgba(255, 255, 255, 0.5) !important; }
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 0 10px rgba(13, 110, 253, 0.5) !important;
+        }
+
+        .table { color: #ffffff !important; }
+        .table-light { --bs-table-bg: rgba(255, 255, 255, 0.15) !important; color: #fff !important; }
+        tr:hover { background-color: rgba(255, 255, 255, 0.05) !important; }
+        
+        .badge-verified { background-color: rgba(25, 135, 84, 0.3); color: #25cff2; border: 1px solid #198754; }
         .cursor-pointer { cursor: pointer; }
+
+        /* 📱 Point 4: Navigation dynamic layout toggle for mobile rendering */
+        @media (max-width: 768px) {
+            .navbar-text { display: block; margin-top: 10px; width: 100%; text-align: center; }
+            .nav-tabs .nav-link { font-size: 0.9rem; padding: 8px 12px; }
+        }
+
+        /* Camera Scanner System Box */
+        #cameraStreamBox {
+            border: 3px dashed #0dcaf0;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            position: relative;
+        }
+        .scan-laser {
+            position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: #0dcaf0; box-shadow: 0 0 12px #0dcaf0;
+            animation: scanMove 2s linear infinite;
+        }
+        @keyframes scanMove {
+            0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark bg-opacity-75 shadow-sm border-b border-secondary">
         <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-graduation-cap me-2 text-warning"></i>E-Academic Vault</a>
-            <div class="collapse navbar-collapse justify-content-end">
-                <span class="navbar-text text-white-50 me-3 cursor-pointer" onclick="openAdminModal()">
-                    <i class="fas fa-user-shield me-1 text-info"></i> Admin Portal (Login/Sign-up)
-                </span>
+            <a class="navbar-brand" href="/"><i class="fas fa-graduation-cap me-2 text-info"></i>E-Academic Vault</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#vaultNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-end" id="vaultNavbar">
+                <% if (locals.admin) { %>
+                    <span class="navbar-text text-white me-3">
+                        <i class="fas fa-user-circle me-1 text-success"></i> Connected: <%= admin.name %> (Admin)
+                    </span>
+                    <a href="/api/admin/logout" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <% } else { %>
+                    <span class="navbar-text text-white-50 cursor-pointer" onclick="openAdminModal()">
+                        <i class="fas fa-user-shield me-1 text-info"></i> Admin Profile
+                    </span>
+                <% } %>
             </div>
         </div>
     </nav>
 
     <div class="container my-5">
         <% if (locals.message) { %>
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <%= message %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="alert alert-info bg-dark bg-opacity-50 text-white border-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-bell me-2 text-info"></i> <%= message %>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
             </div>
         <% } %>
 
-        <ul class="nav nav-tabs mb-4" id="vaultTabs" role="tablist">
+        <ul class="nav nav-tabs mb-4 border-secondary" id="vaultTabs" role="tablist">
             <li class="nav-item">
-                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-panel" type="button">
-                    <i class="fas fa-chart-pie me-2"></i>Dashboard & Verification
+                <button class="nav-link active text-white" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard-panel" type="button">
+                    <i class="fas fa-chart-pie me-2 text-info"></i>Dashboard & Verification
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-panel" type="button">
-                    <i class="fas fa-cloud-upload-alt me-2"></i>Upload New Credential
+                <button class="nav-link text-white" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-panel" type="button">
+                    <i class="fas fa-cloud-upload-alt me-2 text-warning"></i>Upload New Credential
                 </button>
             </li>
         </ul>
@@ -52,18 +131,18 @@
             <div class="tab-pane fade show active" id="dashboard-panel">
                 <div class="row g-3 mb-4 align-items-center">
                     <div class="col-md-7">
-                        <form action="/" method="GET" class="input-group shadow-sm">
-                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                        <form action="/" method="GET" class="input-group">
+                            <span class="input-group-text bg-transparent text-white border-secondary"><i class="fas fa-search"></i></span>
                             <input type="text" name="search" class="form-control" placeholder="Search by Enrollment Number..." value="<%= searchQuery || '' %>">
-                            <button type="submit" class="btn btn-primary">Search</button>
+                            <button type="submit" class="btn btn-info px-4">Search</button>
                         </form>
                     </div>
                     <div class="col-md-5 text-md-end">
-                        <span class="badge bg-secondary p-2 shadow-sm"><i class="fas fa-database me-1"></i> Total Secured Records: <%= certificates.length %></span>
+                        <span class="badge bg-dark border border-secondary p-2"><i class="fas fa-database text-warning me-1"></i> Total Secured Records: <%= certificates.length %></span>
                     </div>
                 </div>
 
-                <div class="card shadow-sm">
+                <div class="card glass-card shadow-lg">
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
@@ -75,12 +154,12 @@
                                         <th>University</th>
                                         <th>Passing Year</th>
                                         <th>Status</th>
-                                        <th class="text-end pe-4">Action</th>
+                                        <th class="text-end pr-4">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <% if(certificates.length === 0) { %>
-                                        <tr><td colspan="7" class="text-center p-4 text-muted">No verified records found.</td></tr>
+                                        <tr><td colspan="7" class="text-center p-5 text-white-50">No verified academic database entries fetched.</td></tr>
                                     <% } else { %>
                                         <% certificates.forEach(cert => { %>
                                             <tr>
@@ -91,8 +170,8 @@
                                                 <td><%= cert.passingYear %></td>
                                                 <td><span class="badge badge-verified"><i class="fas fa-check-circle me-1"></i> Verified</span></td>
                                                 <td class="text-end pe-4">
-                                                    <button class="btn btn-sm btn-outline-primary" onclick="triggerStudentAccess('<%= cert._id %>', '<%= cert.studentName %>', '<%= cert.course %>', '<%= cert.enrollmentNo %>')">
-                                                        <i class="fas fa-eye me-1"></i> View / Download
+                                                    <button class="btn btn-sm btn-outline-info" onclick="triggerStudentAccess('<%= cert._id %>', '<%= cert.enrollmentNo %>')">
+                                                        <i class="fas fa-download me-1"></i> Get Document
                                                     </button>
                                                 </td>
                                             </tr>
@@ -108,44 +187,54 @@
             <div class="tab-pane fade" id="upload-panel">
                 <div class="row justify-content-center">
                     <div class="col-md-8">
-                        <div class="card shadow-sm border-top border-primary border-4">
-                            <div class="card-header bg-white py-3">
-                                <h5 class="card-title mb-0 text-primary"><i class="fas fa-file-medical me-2"></i>Vault New Document (Admin Only)</h5>
+                        <div class="card glass-card shadow-lg border-top border-info border-4">
+                            <div class="card-header bg-transparent py-3 border-secondary">
+                                <h5 class="card-title mb-0 text-info"><i class="fas fa-file-shield me-2"></i>Vault New Document (Admin System)</h5>
                             </div>
                             <div class="card-body">
-                                <form action="/api/upload" method="POST" enctype="multipart/form-data">
-                                    <div class="row g-3 mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Student Full Name</label>
-                                            <input type="text" name="studentName" class="form-control" required>
+                                <% if (!locals.admin) { %>
+                                    <div class="text-center p-4">
+                                        <i class="fas fa-lock text-warning fa-3x mb-3"></i>
+                                        <h5>Access Control Restriction</h5>
+                                        <p class="text-white-50">Only logged-in authorized institute admins can execute ledger mutations or upload official degrees.</p>
+                                        <button class="btn btn-info btn-sm mt-2" onclick="openAdminModal()">Authenticate Admin Profile</button>
+                                    </div>
+                                <% } else { %>
+                                    <form action="/api/upload" method="POST" enctype="multipart/form-data">
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Student Full Name</label>
+                                                <input type="text" name="studentName" class="form-control" required>
+                                            </div>
+                                            <div class="col-md-6">
+                  
+                                              <label class="form-label">Enrollment Number</label>
+                                                <input type="text" name="enrollmentNo" class="form-control" required>
+                                            </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Enrollment Number</label>
-                                            <input type="text" name="enrollmentNo" class="form-control" required>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Course / Degree</label>
+                                                <input type="text" name="course" class="form-control" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">University / Board</label>
+                                                <input type="text" name="university" class="form-control" required>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="row g-3 mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Course / Degree</label>
-                                            <input type="text" name="course" class="form-control" required>
+                                        <div class="mb-3">
+                                            <label class="form-label">Year of Passing</label>
+                                            <input type="number" name="passingYear" class="form-control" required>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">University / Board</label>
-                                            <input type="text" name="university" class="form-control" required>
+                                        <div class="mb-4">
+                                            <label class="form-label">Upload Certificate File (Strict: PDF or Image Degree only)</label>
+                                            <input type="file" name="credentialFile" class="form-control" accept="application/pdf, image/jpeg, image/png" required>
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Year of Passing</label>
-                                        <input type="number" name="passingYear" class="form-control" required>
-                                    </div>
-                                    <div class="mb-4">
-                                        <label class="form-label">Upload Certificate File (PDF/Image)</label>
-                                        <input type="file" name="credentialFile" class="form-control" accept="application/pdf, image/*" required>
-                                    </div>
-                                    <div class="d-grid">
-                                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-lock me-2"></i>Securely Vault Data</button>
-                                    </div>
-                                </form>
+                                        <div class="d-grid">
+                                            <button type="submit" class="btn btn-info btn-lg text-white"><i class="fas fa-shield-alt me-2"></i>Securely Vault Data</button>
+                                        </div>
+                                    </form>
+                                <% } %>
                             </div>
                         </div>
                     </div>
@@ -156,10 +245,13 @@
 
     <div class="modal fade" id="adminModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="adminModalTitle"><i class="fas fa-user-plus me-2 text-info"></i>Create Admin Account</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-content shadow-lg">
+                <div class="modal-header border-secondary bg-dark text-white text-center d-block position-relative">
+                    <div class="my-2">
+                        <i class="fas fa-university fa-3x text-info"></i>
+                    </div>
+                    <h5 class="modal-title w-100" id="adminModalTitle">Admin Profile</h5>
+                    <button type="button" class="btn-close btn-close-white position-absolute end-0 top-0 m-3" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div id="signUpView">
@@ -167,17 +259,24 @@
                             <div class="mb-3"><label class="form-label">Full Name</label><input type="text" name="name" class="form-control" required></div>
                             <div class="mb-3"><label class="form-label">Email ID</label><input type="email" name="email" class="form-control" required></div>
                             <div class="mb-3"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
-                            <div class="d-grid mb-3"><button type="submit" class="btn btn-primary">Register Account</button></div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label text-warning">College Specific Registration Number (Secret Key)</label>
+                                <input type="text" name="collegeAdminId" class="form-control border-warning" placeholder="Enter Official Campus Code" required>
+                            </div>
+                            
+                            <div class="d-grid mb-3"><button type="submit" class="btn btn-info text-white">Register Profile Account</button></div>
                         </form>
-                        <p class="text-center text-muted mb-0">Already registered? <span class="text-primary cursor-pointer fw-bold" onclick="toggleAdminView('login')">Log In Here</span></p>
+                        <p class="text-center text-white-50 small mb-0">Already registered? <span class="text-info cursor-pointer fw-bold" onclick="toggleAdminView('login')">Log In Here</span></p>
                     </div>
+                    
                     <div id="loginView" style="display: none;">
                         <form action="/api/admin/login" method="POST">
                             <div class="mb-3"><label class="form-label">Email ID</label><input type="email" name="email" class="form-control" required></div>
                             <div class="mb-3"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>
                             <div class="d-grid mb-3"><button type="submit" class="btn btn-success">Secure Log In</button></div>
                         </form>
-                        <p class="text-center text-muted mb-0">New User? <span class="text-primary cursor-pointer fw-bold" onclick="toggleAdminView('signup')">Create Account</span></p>
+                        <p class="text-center text-white-50 small mb-0">New Campus Personnel? <span class="text-info cursor-pointer fw-bold" onclick="toggleAdminView('signup')">Create Admin Account</span></p>
                     </div>
                 </div>
             </div>
@@ -185,27 +284,42 @@
     </div>
 
     <div class="modal fade" id="studentAuthModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fas fa-lock me-2"></i>Student Access Verification</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-secondary bg-primary bg-opacity-75 text-white">
+                    <h5 class="modal-title"><i class="fas fa-fingerprint me-2"></i>Secure Access Verification Pipeline</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopCamera()"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="studentAuthForm" action="/api/student/verify" method="POST">
-                        <input type="hidden" id="authCertId" name="certId">
-                        <div class="mb-3">
-                            <label class="form-label">College ID / Enrollment No</label>
-                            <input type="text" id="studentAuthId" name="enrollmentNo" class="form-control" readonly>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <form id="studentAuthForm" action="/api/student/verify" method="POST">
+                                <input type="hidden" id="authCertId" name="certId">
+                                <div class="mb-3">
+                                    <label class="form-label">Enrollment No / ID Target</label>
+                                    <input type="text" id="studentAuthId" name="enrollmentNo" class="form-control" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Portal Access Pin</label>
+                                    <input type="password" name="password" class="form-control" placeholder="Enter passcode (Hint: 123456)" required>
+                                </div>
+                                <div class="d-grid mb-2">
+                                    <button type="submit" class="btn btn-primary">Download Verified Asset</button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Portal Password</label>
-                            <input type="password" name="password" class="form-control" placeholder="Enter portal password (Hint: 123456)" required>
+                        
+                        <div class="col-md-6 text-center">
+                            <label class="form-label text-info d-block fw-bold"><i class="fas fa-camera me-1"></i> Anti-Fake AI Verification Cam</label>
+                            <div id="cameraStreamBox" class="mb-2" style="height: 180px;">
+                                <div class="scan-laser" id="laserLine" style="display:none;"></div>
+                                <video id="webcamFeed" autoplay playsinline class="w-100 h-100 object-fit-cover" style="transform: scaleX(-1); background: #1e293b;"></video>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-info w-100" id="camActionBtn" onclick="toggleCameraStream()">
+                                <i class="fas fa-video me-1"></i> Start Verification Camera
+                            </button>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Verify & Download Credential</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -213,9 +327,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let videoStream = null;
+
         function openAdminModal() {
             new bootstrap.Modal(document.getElementById('adminModal')).show();
         }
+        
         function toggleAdminView(view) {
             if(view === 'signup') {
                 document.getElementById('signUpView').style.display = "block";
@@ -225,10 +342,49 @@
                 document.getElementById('loginView').style.display = "block";
             }
         }
-        function triggerStudentAccess(id, name, course, rollNo) {
+        
+        function triggerStudentAccess(id, rollNo) {
             document.getElementById('authCertId').value = id;
             document.getElementById('studentAuthId').value = rollNo;
             new bootstrap.Modal(document.getElementById('studentAuthModal')).show();
+        }
+
+        /* 📷 Point 5: Native Device Camera Feed Pipeline logic */
+        async function toggleCameraStream() {
+            const videoEl = document.getElementById('webcamFeed');
+            const laser = document.getElementById('laserLine');
+            const btn = document.getElementById('camActionBtn');
+
+            if (!videoStream) {
+                try {
+                    videoStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: "user" } 
+                    });
+                    videoEl.srcObject = videoStream;
+                    laser.style.display = "block";
+                    btn.innerHTML = `<i class="fas fa-video-slash me-1"></i> Close Validation Stream`;
+                    btn.classList.replace('btn-outline-info', 'btn-outline-danger');
+                } catch (err) {
+                    alert("⚠️ Camera Access Denied or Missing Media Capture Device!");
+                }
+            } else {
+                stopCamera();
+            }
+        }
+
+        function stopCamera() {
+            const videoEl = document.getElementById('webcamFeed');
+            const laser = document.getElementById('laserLine');
+            const btn = document.getElementById('camActionBtn');
+            
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            videoEl.srcObject = null;
+            laser.style.display = "none";
+            btn.innerHTML = `<i class="fas fa-video me-1"></i> Start Verification Camera`;
+            btn.classList.replace('btn-outline-danger', 'btn-outline-info');
         }
     </script>
 </body>
